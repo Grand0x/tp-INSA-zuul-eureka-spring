@@ -42,6 +42,23 @@ graph TB
 - **PostgreSQL**: Base de données pour la gestion des données des services.
 - **Docker**: Utilisé pour la conteneurisation des services pour faciliter le déploiement.
 
+## Méthode de Travail : Git Flow
+
+Nous utilisons la méthode Git Flow pour gérer le développement de notre projet. Git Flow est une stratégie de gestion de branches qui aide à structurer et à organiser le développement de manière efficace et ordonnée. - Voici les principes clés et comment nous les appliquons :
+
+### Branches Principales
+
+- **main**: Cette branche contient le code de production, celui qui est actuellement en production.
+- **develop**: Tous les développements en cours (features, corrections, etc.) sont fusionnés dans cette branche avant d'être passés en production.
+
+### Workflow
+
+1. **Démarrer une nouvelle fonctionnalité** : `git checkout -b feature/xyz develop`
+2. **Terminer une fonctionnalité** : `git checkout develop` puis `git merge feature/xyz`
+3. **Préparer une release** : `git checkout -b release/1.0 develop`
+4. **Terminer une release** : `git checkout main` puis `git merge release/1.0` et aussi `git checkout develop` puis `git merge release/1.0`
+5. **Gérer un hotfix** : `git checkout -b hotfix/urgent-fix main`
+
 ## Installation
 
 *Instructions d'installation seront ajoutées ici une fois le projet prêt pour le déploiement.*
