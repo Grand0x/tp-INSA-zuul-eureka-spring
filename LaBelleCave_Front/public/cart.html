@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Panier - La Belle Cave</title>
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        #logo {
+            width: 200px;
+            height: auto;
+        }
+
+        .ui.menu {
+            margin-bottom: 2em;
+        }
+
+        .total-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .ui.table th,
+        .ui.table td {
+            text-align: center;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+</head>
+
+<body>
+    <div class="ui menu">
+        <a href="/" class="item">
+            <img src="img/logo-bg.png" alt="La Belle Cave Logo" id="logo">
+        </a>
+    </div>
+
+    <div class="ui container">
+        <h2 class="ui header">Votre panier</h2>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix</th>
+                    <th>Quantité</th>
+                    <th>Sous-total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cartItems">
+                <!-- Les articles du panier seront ajoutés ici dynamiquement -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3">Total</th>
+                    <th id="totalPrice">$0.00</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+        <button class="ui button green" onclick="checkout()">Commander</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCartItems();
+        });
+
+        function loadCartItems() {
+            // Fetch and parse cart items here (simulated or actual fetch)
+            let cart = JSON.parse(localStorage.getItem('cart')) || [
+                {
+                    "product_id": 1,
+                    "name": "Chateau Briand",
+                    "price": 45.00,
+                    "quantity": 2
+                },
+                {
+                    "product_id": 2,
+                    "name": "Merlot Classic",
+                    "price": 20.00,
+                    "quantity": 3
+                },
+                {
+                    "product_id": 3,
+                    "name": "Cabernet Sauvignon",
+                    "price": 30.00,
+                    "quantity": 1
+                }
+            ]
+                ;
+            let totalPrice = 0;
+            const container = document.getElementById('cartItems');
+            container.innerHTML = ''; // Clear existing items
+
+            cart.forEach((item, index) => {
+                let row = `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>
+                        <div class="ui input">
+                            <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity(${index}, this.value)">
+                        </div>
+                    </td>
+                    <td id="subtotal-${index}">$${(item.price * item.quantity).toFixed(2)}</td>
+                    <td>
+                        <button class="ui button red" onclick="removeItem(${index})">Supprimer</button>
+                    </td>
+                </tr>
+            `;
+                container.innerHTML += row;
+                totalPrice += item.price * item.quantity;
+            });
+
+            document.getElementById('totalPrice').textContent = `$${totalPrice.toFixed(2)}`;
+        }
+
+        function updateQuantity(index, quantity) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            index = parseInt(index); // Ensure index is a number
+            quantity = parseInt(quantity); // Parse the quantity as a number
+
+            if (quantity < 1) {
+                alert("Quantité invalide");
+                loadCartItems(); // Reload to reset the invalid input
+                return;
+            }
+
+            cart[index].quantity = quantity;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            recalculateCart();
+        }
+
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1); // Remove item at index
+            localStorage.setItem('cart', JSON.stringify(cart));
+            recalculateCart();
+        }
+
+        function recalculateCart() {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let totalPrice = 0;
+            cart.forEach((item, index) => {
+                let subtotal = item.price * item.quantity;
+                document.getElementById(`subtotal-${index}`).textContent = `$${subtotal.toFixed(2)}`;
+                totalPrice += subtotal;
+            });
+            document.getElementById('totalPrice').textContent = `$${totalPrice.toFixed(2)}`;
+        }
+
+        function checkout() {
+            console.log('Checking out', { items: JSON.parse(localStorage.getItem('cart')) });
+            window.location.href = '/checkout.html';
+        }
+    </script>
+</body>
+
+</html>

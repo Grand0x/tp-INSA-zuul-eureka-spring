@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion - La Belle Cave</title>
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        #logo {
+            width: 200px;
+            /* Ajustez la largeur selon vos besoins */
+            height: auto;
+            /* Gardez le ratio hauteur/largeur */
+        }
+
+        .ui.menu {
+            margin-bottom: 3em;
+        }
+
+        .content {
+            color: black;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+</head>
+
+<body>
+    <div class="ui menu">
+        <a href="/" class="item">
+            <img src="img/logo-bg.png" alt="La Belle Cave Logo" id="logo">
+        </a>
+    </div>
+
+    <div class="ui middle aligned center aligned grid" style="width: 100%">
+        <div class="column" style="max-width: 450px;">
+            <h2 class="ui teal image header">
+                <div class="content">
+                    Connectez-vous à votre compte
+                </div>
+            </h2>
+            <form class="ui large form" id="loginForm">
+                <div class="ui stacked segment">
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="user icon"></i>
+                            <input type="text" name="email" placeholder="Adresse e-mail">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="lock icon"></i>
+                            <input type="password" name="password" placeholder="Mot de passe">
+                        </div>
+                    </div>
+                    <button class="ui fluid large teal submit button" type="submit">Se connecter</button>
+                </div>
+
+                <div class="ui error message"></div>
+            </form>
+            <div class="ui message">
+                Nouveau ici? <a href="signup.html">S'inscrire</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('.ui.form')
+                .form({
+                    fields: {
+                        email: {
+                            identifier: 'email',
+                            rules: [
+                                {
+                                    type: 'empty',
+                                    prompt: 'Veuillez entrer votre adresse e-mail'
+                                },
+                                {
+                                    type: 'email',
+                                    prompt: 'Veuillez entrer une adresse e-mail valide'
+                                }
+                            ]
+                        },
+                        password: {
+                            identifier: 'password',
+                            rules: [
+                                {
+                                    type: 'empty',
+                                    prompt: 'Veuillez entrer votre mot de passe'
+                                }
+                            ]
+                        }
+                    }
+                });
+            $('#loginForm').on('submit', function (e) {
+                e.preventDefault();
+                const email = $('input[name="email"]').val();
+                const password = $('input[name="password"]').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/users/login",
+                    data: JSON.stringify({ email, password }),
+                    contentType: "application/json",
+                    success: function (response) {
+                        // Stockez le token dans les cookies
+                        document.cookie = "token=" + response + "; path=/";
+                        alert('Connexion réussie!');
+                        window.location.href = '/';
+                    },
+                    error: function (xhr, status, error) {
+                        $('.ui.error.message').html('<ul class="list"><li>' + xhr.responseText + '</li></ul>').show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

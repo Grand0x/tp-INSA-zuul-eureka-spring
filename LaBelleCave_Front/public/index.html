@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>La Belle Cave</title>
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        #logo {
+            width: 200px;
+            /* Ajustez la largeur selon vos besoins */
+            height: auto;
+            /* Gardez le ratio hauteur/largeur */
+        }
+
+        #products-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .product-card {
+            width: 300px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+</head>
+
+<body>
+    <div class="ui menu">
+        <a href="/" class="item">
+            <img src="img/logo-bg.png" alt="La Belle Cave Logo" id="logo">
+        </a>
+        <div class="right menu">
+            <div class="ui dropdown item" id="user-menu">
+                <span id="user-name">Connexion</span>
+                <i class="dropdown icon"></i>
+                <div class="menu" id="user-actions">
+                    <div class="item">Se connecter</div>
+                    <div class="item">S'inscrire</div>
+                </div>
+            </div>
+            <a href="cart.html" class="item">
+                <i class="shopping cart icon"></i> Panier
+            </a>
+        </div>
+    </div>
+
+    <div class="ui text container" style="margin-top: 50px;">
+        <h1 class="ui center aligned header">Nos Produits</h1>
+        <div class="ui three column stackable grid" id="products-container"></div>
+    </div>
+
+    <div class="ui inverted vertical footer segment">
+        <div class="ui center aligned container">
+            <h4 class="ui inverted header">&copy; La belle cave - INSA HDF</h4>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('.ui.dropdown').dropdown();
+            updateMenu();
+        });
+
+        fetch('http://localhost:3000/products')
+            .then(response => response.json())
+            .then(products => {
+                const container = document.getElementById('products-container');
+                products.forEach(product => {
+                    const column = document.createElement('div');
+                    column.className = 'column';
+
+                    const productElement = document.createElement('div');
+                    productElement.className = 'ui card';
+                    productElement.innerHTML = `
+                        <div class="image">
+                            <img src="${product.image || 'placeholder.png'}" alt="${product.name}">
+                        </div>
+                        <div class="content">
+                            <a class="header">${product.name}</a>
+                            <div class="meta">
+                                <span class="date">€${product.price_ht}</span>
+                            </div>
+                            <div class="description">
+                                ${product.description}
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui button">Ajouter au panier</div>
+                        </div>
+                    `;
+                    column.appendChild(productElement);
+                    container.appendChild(column);
+                });
+            })
+            .catch(error => console.error('Error fetching products:', error));
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            updateMenu();  // Initialise le menu utilisateur lors du chargement de la page
+            $('.ui.dropdown').dropdown();  // Activez le comportement déroulant de Semantic UI
+        });
+
+        function updateMenu() {
+            const token = getCookie('token'); // Obtenez le token des cookies
+            const user = JSON.parse(localStorage.getItem('user')); // Obtenez les informations de l'utilisateur depuis le localStorage
+
+            const menu = document.getElementById('user-actions');
+            const userNameDisplay = document.getElementById('user-name');
+            menu.innerHTML = ''; // Nettoyez le menu précédent
+
+            if (token) {
+                // Utilisateur connecté
+                userNameDisplay.textContent = `Bonjour ${user ? user.firstName : ''}`;
+                userNameDisplay.onclick = null; // Enlevez tout gestionnaire d'événement précédent
+
+                // Option Se déconnecter
+                appendMenuItem(menu, 'Se déconnecter', function () {
+                    document.cookie = 'token=; Max-Age=0; path=/'; // Supprimez le token du cookie
+                    localStorage.removeItem('user'); // Supprimez les infos de l'utilisateur du localStorage
+                    window.location.reload(); // Rafraîchissez la page pour répercuter les changements
+                });
+
+                // Option Gérer les stocks (seulement si l'utilisateur est admin)
+                if (user && user.isAdmin) {
+                    appendMenuItem(menu, 'Gérer les stocks', function () {
+                        window.location.href = 'stocks.html'; // Redirigez vers la page de gestion des stocks
+                    });
+                }
+            } else {
+                // Utilisateur non connecté
+                userNameDisplay.textContent = 'Connexion';
+                appendMenuItem(menu, 'Se connecter', function () {
+                    window.location.href = 'login.html';
+                });
+                appendMenuItem(menu, 'S\'inscrire', function () {
+                    window.location.href = 'signup.html';
+                });
+            }
+        }
+
+        function appendMenuItem(menu, text, onClick) {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.textContent = text;
+            item.onclick = onClick;
+            menu.appendChild(item);
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('.ui.dropdown').dropdown();
+            updateMenu();
+            loadProducts();
+        });
+
+        function loadProducts() {
+            // Données simulées pour les produits
+            const products = [
+                {
+                    "id": 1,
+                    "name": "Ricard Pastis de Marseille",
+                    "description": "Le classique apéritif anisé originaire de Marseille, souvent servi avec de l'eau pour un rafraîchissement estival.",
+                    "alcohol_degree": 45.0,
+                    "capacity": 750,
+                    "price_ht": 22.00,
+                    "stock": 150,
+                    "image": "img/ricard.jpg"
+                },
+                {
+                    "id": 2,
+                    "name": "Pastis 51",
+                    "description": "Un autre pastis emblématique de Marseille, connu pour son goût distinctif d'anis et une touche de réglisse.",
+                    "alcohol_degree": 45.0,
+                    "capacity": 750,
+                    "price_ht": 20.00,
+                    "stock": 100,
+                    "image": "img/pastis51.jpg"
+                },
+                {
+                    "id": 3,
+                    "name": "Henri Bardouin Pastis",
+                    "description": "Un pastis artisanal qui se distingue par un mélange complexe d'herbes et d'épices, le rendant riche en arômes.",
+                    "alcohol_degree": 42.0,
+                    "capacity": 750,
+                    "price_ht": 25.00,
+                    "stock": 80,
+                    "image": "img/henri-bardouin.png"
+                },
+                {
+                    "id": 4,
+                    "name": "Pastis Janot",
+                    "description": "Une variété de pastis de Provence qui offre un goût plus doux comparé aux versions plus commerciales.",
+                    "alcohol_degree": 40.0,
+                    "capacity": 750,
+                    "price_ht": 18.00,
+                    "stock": 120,
+                    "image": "img/pastis-janot.jpeg"
+                },
+                {
+                    "id": 5,
+                    "name": "Pastis Bleu",
+                    "description": "Reconnaissable à sa couleur bleue unique, ce pastis ajoute une touche visuelle à l'apéritif traditionnel.",
+                    "alcohol_degree": 40.0,
+                    "capacity": 750,
+                    "price_ht": 19.00,
+                    "stock": 90,
+                    "image": "img/pastis-bleu.jpg"
+                },
+                {
+                    "id": 6,
+                    "name": "Le Pastis d'Amélie",
+                    "description": "Fabriqué en petits lots, ce pastis artisanal est renommé pour ses notes florales et herbacées distinctes.",
+                    "alcohol_degree": 42.0,
+                    "capacity": 750,
+                    "price_ht": 23.00,
+                    "stock": 70,
+                    "image": "img/pastis-amelie.jpg"
+                },
+                {
+                    "id": 7,
+                    "name": "Pastis des Homs",
+                    "description": "Prisé pour son profil aromatique complexe, il est produit dans une petite distillerie avec des méthodes traditionnelles.",
+                    "alcohol_degree": 45.0,
+                    "capacity": 750,
+                    "price_ht": 24.00,
+                    "stock": 50,
+                    "image": "img/pastis-homs.jpg"
+                },
+                {
+                    "id": 8,
+                    "name": "Pernod Pastis",
+                    "description": "Un des premiers pastis à être commercialisé, Pernod est connu pour son profil de saveur équilibré et sa fidélité aux traditions.",
+                    "alcohol_degree": 40.0,
+                    "capacity": 750,
+                    "price_ht": 21.00,
+                    "stock": 110,
+                    "image": "img/pernod.jpg"
+                },
+                {
+                    "id": 9,
+                    "name": "Pastis Duval",
+                    "description": "Ce pastis est un peu moins anisé que les autres, offrant une expérience gustative légèrement différente, avec des touches de fenouil.",
+                    "alcohol_degree": 38.0,
+                    "capacity": 750,
+                    "price_ht": 17.00,
+                    "stock": 130,
+                    "image": "img/pastis-duval.jpg"
+                },
+                {
+                    "id": 10,
+                    "name": "Casanis Pastis",
+                    "description": "Un pastis traditionnel favorisé pour son mélange classique d'herbes et d'anis, offrant une profondeur de saveur.",
+                    "alcohol_degree": 45.0,
+                    "capacity": 750,
+                    "price_ht": 22.00,
+                    "stock": 60,
+                    "image": "img/casanis.jpg"
+                }
+            ];
+
+            const container = document.getElementById('products-container');
+            products.forEach(product => {
+                const column = document.createElement('div');
+                column.className = 'column';
+
+                const productElement = document.createElement('div');
+                productElement.className = 'ui card';
+                productElement.innerHTML = `
+                    <div class="image">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="content">
+                        <a class="header" href="product_details.html?id=${product.id}">${product.name}</a>
+                        <div class="meta">
+                            <span class="date">€${product.price_ht}</span>
+                        </div>
+                        <div class="description">
+                            ${product.description}
+                        </div>
+                    </div>
+                    <div class="extra content">
+                        <div class="ui button">Ajouter au panier</div>
+                    </div>
+                `;
+                column.appendChild(productElement);
+                container.appendChild(column);
+            });
+        }
+    </script>
+
+
+
+</body>
+
+</html>

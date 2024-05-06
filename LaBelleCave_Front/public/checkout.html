@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Paiement - La Belle Cave</title>
+    <link rel="icon" href="img/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+
+        .payment-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+
+        .payment-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .ui.form .field>label {
+            padding: 0;
+        }
+
+        .ui.input input {
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .ui.button {
+            width: 100%;
+            color: white;
+            background-color: #2185d0;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="payment-form">
+    <form class="ui form" id="paymentForm">
+        <h2>Payez en ligne</h2>
+        <div class="field">
+            <label>Nom sur la carte</label>
+            <div class="ui input">
+                <input type="text" name="cardName" placeholder="Nom">
+            </div>
+        </div>
+        <div class="field">
+            <label>N° de carte</label>
+            <div class="ui input">
+                <input type="text" name="cardNumber" placeholder="**** **** **** ****">
+            </div>
+        </div>
+        <div class="fields">
+            <div class="eight wide field">
+                <label>Date d'expiration</label>
+                <div class="ui input">
+                    <input type="text" name="expiryDate" placeholder="MM/AA">
+                </div>
+            </div>
+            <div class="eight wide field">
+                <label>Cryptogramme visuel</label>
+                <div class="ui input">
+                    <input type="text" name="cvv" placeholder="***">
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label>Adresse de facturation</label>
+            <div class="ui input">
+                <input type="text" name="billingAddress" placeholder="Adresse">
+            </div>
+        </div>
+        <button class="ui button" type="submit">Payer $<span id="totalAmount">0.00</span></button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Assume total amount is stored in localStorage for now
+        const totalAmount = localStorage.getItem('totalPrice') || '0.00';
+        document.getElementById('totalAmount').textContent = parseFloat(totalAmount).toFixed(2);
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = {
+            cardName: this.cardName.value,
+            cardNumber: this.cardNumber.value,
+            expiryDate: this.expiryDate.value,
+            cvv: this.cvv.value,
+            billingAddress: this.billingAddress.value
+        };
+        console.log('Payment Data:', formData);
+        alert('Processing payment...');
+        // Here you would typically send data to your server or payment provider
+    });
+</script>
+</body>
+</html>
