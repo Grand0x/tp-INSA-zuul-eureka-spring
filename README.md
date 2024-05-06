@@ -4,6 +4,11 @@
 
 Ce projet est une démonstration d'une architecture de micro-services pour une application de e-commerce. Il utilise Spring Boot pour le développement des services, Eureka pour la gestion de la découverte des services, et Zuul comme API Gateway pour router et filtrer les requêtes. Ce système est conçu pour être simple mais évolutif, permettant une séparation claire des responsabilités via différents micro-services.
 
+## Contributeurs 
+Auteurs : ***[Robin JUAN](https://github.com/rob1juan)*** & ***[Maxime GUIOT](https://github.com/grand0x)***
+
+École : **[INSA Hauts-de-France](https://www.insa-hautsdefrance.fr/)**
+
 ## Architecture
 
 ### Composants du Système
