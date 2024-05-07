@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,8 +17,8 @@ public class OrderController {
     private OrderRepository orderRepository;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders(@RequestParam Long clientId) {
-        List<Order> orders = orderRepository.findByClientId(clientId);
+    public ResponseEntity<List<Order>> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
         return ResponseEntity.ok(orders);
     }
 
@@ -45,7 +46,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteOrder(@PathVariable Long id) {
         return orderRepository.findById(id)
                 .map(order -> {
                     orderRepository.delete(order);

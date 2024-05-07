@@ -3,8 +3,11 @@ package insa.architecture.users.controller;
 import insa.architecture.users.model.User;
 import insa.architecture.users.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/users")

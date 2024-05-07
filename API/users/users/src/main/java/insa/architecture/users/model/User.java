@@ -1,6 +1,6 @@
 package insa.architecture.users.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -13,6 +13,7 @@ public class User {
     private String firstName;
     private String address;
     private String email;
+    private String password;
     private String phone;
     private boolean isAdmin;
 
@@ -72,4 +73,8 @@ public class User {
     public void setAdmin(boolean admin) {
         isAdmin = admin;
     }
+
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) { this.password = password; }
 }
