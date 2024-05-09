@@ -5,11 +5,13 @@ import insa.architecture.products.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:8050", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}, allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -45,6 +47,7 @@ public class ProductController {
                     product.setCapacity(productDetails.getCapacity());
                     product.setPriceHt(productDetails.getPriceHt());
                     product.setStock(productDetails.getStock());
+                    product.setImage(productDetails.getImage());
                     final Product updatedProduct = productRepository.save(product);
                     return ResponseEntity.ok(updatedProduct);
                 }).orElseGet(() -> ResponseEntity.notFound().build());

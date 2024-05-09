@@ -15,6 +15,7 @@ public class Product {
     private Integer capacity;
     private Double priceHt;
     private Integer stock;
+    private String image;
 
     // Getters et Setters
     public Long getId() {
@@ -71,5 +72,13 @@ public class Product {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
