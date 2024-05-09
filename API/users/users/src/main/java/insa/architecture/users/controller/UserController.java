@@ -8,7 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:8050", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+        RequestMethod.DELETE }, allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -17,18 +21,28 @@ public class UserController {
     private UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody User user) {
         User savedUser = userRepository.save(user);
-        return ResponseEntity.created(URI.create("/users/" + savedUser.getId())).body(savedUser);
+        String token = generateToken(savedUser); // Supposons une méthode qui génère un token JWT
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("userId", savedUser.getId());
+        response.put("firstName", savedUser.getFirstName());
+        response.put("isAdmin", savedUser.isAdmin());
+        return ResponseEntity.created(URI.create("/users/" + savedUser.getId())).body(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User login) {
         User user = userRepository.findByEmail(login.getEmail());
-        if (user != null && user.getPassword().equals(login.getPassword())) { // Assuming you have a getPassword method
-            // Generate token (pseudo code)
-            String token = "generated-token";
-            return ResponseEntity.ok().body(token);
+        if (user != null && user.getPassword().equals(login.getPassword())) {
+            String token = generateToken(user); // Supposons une méthode qui génère un token JWT
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("userId", user.getId());
+            response.put("firstName", user.getFirstName());
+            response.put("isAdmin", user.isAdmin());
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -42,7 +56,8 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<User> updateUserProfile(@RequestHeader("Authorization") String token, @RequestBody User userDetails) {
+    public ResponseEntity<User> updateUserProfile(@RequestHeader("Authorization") String token,
+            @RequestBody User userDetails) {
         // Validate token and update user
         User user = findUserByToken(token); // Pseudo code
         user.setFirstName(userDetails.getFirstName());
@@ -64,5 +79,11 @@ public class UserController {
     private User findUserByToken(String token) {
         // This should actually check a token store or similar
         return userRepository.findById(Long.valueOf(token)).orElse(null);
+    }
+
+    // Helper method to simulate token generation
+    private String generateToken(User user) {
+        // This should actually generate a JWT token
+        return String.valueOf(user.getId());
     }
 }
