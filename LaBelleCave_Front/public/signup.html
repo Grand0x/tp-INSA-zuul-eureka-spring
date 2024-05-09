@@ -135,8 +135,8 @@
                                 prompt: 'Veuillez entrer votre mot de passe'
                             },
                             {
-                                type: 'length[6]',
-                                prompt: 'Votre mot de passe doit contenir au moins 6 caractères'
+                                type: 'length[1]',
+                                prompt: 'Votre mot de passe doit contenir au moins 1 caractère'
                             }
                         ]
                     },
@@ -162,32 +162,33 @@
             });
 
             $('#registerForm').on('submit', function (e) {
-                e.preventDefault(); // Empêche la soumission standard du formulaire
-
+                e.preventDefault();
                 var userData = {
-                    firstname: $('input[name="firstname"]').val(),
-                    lastname: $('input[name="lastname"]').val(),
+                    firstName: $('input[name="firstname"]').val(),
+                    lastName: $('input[name="lastname"]').val(),
                     email: $('input[name="email"]').val(),
                     password: $('input[name="password"]').val(),
                     address: $('input[name="address"]').val(),
                     phone: $('input[name="phone"]').val(),
-                    admin: false  // Supposons que tous les utilisateurs ne sont pas des admins
+                    isAdmin: false  // Cela pourrait être déterminé côté serveur aussi
                 };
 
                 $.ajax({
                     type: "POST",
-                    url: "/users/register",  // Assurez-vous que cette route est correctement configurée dans votre serveur Node.js
+                    url: "http://localhost:8083/users/register",
                     data: JSON.stringify(userData),
                     contentType: "application/json",
                     success: function (response) {
-                        alert('Inscription réussie, bienvenue ' + response.user.firstname);
-                        window.location.href = '/login.html'; // Redirection vers la page de connexion
+                        localStorage.setItem('user', JSON.stringify(response));  // Stocke le token et les infos de l'utilisateur
+                        alert('Inscription réussie, bienvenue ' + response.firstName);
+                        window.location.href = '/';
                     },
-                    error: function (err) {
-                        alert('Erreur lors de l\'inscription: ' + err.responseText);
+                    error: function (xhr) {
+                        $('.ui.error.message').html('<ul class="list"><li>' + xhr.responseText + '</li></ul>').show();
                     }
                 });
             });
+
         });
     </script>
 </body>

@@ -68,7 +68,7 @@
             updateMenu();
         });
 
-        fetch('http://localhost:3000/products')
+        fetch('http://localhost:8081/products')
             .then(response => response.json())
             .then(products => {
                 const container = document.getElementById('products-container');
@@ -83,9 +83,9 @@
                             <img src="${product.image || 'placeholder.png'}" alt="${product.name}">
                         </div>
                         <div class="content">
-                            <a class="header">${product.name}</a>
+                            <a class="header" href="product_details.html?id=${product.id}">${product.name}</a>
                             <div class="meta">
-                                <span class="date">€${product.price_ht}</span>
+                                <span class="date">€${product.priceHt}</span>
                             </div>
                             <div class="description">
                                 ${product.description}
@@ -108,33 +108,26 @@
         });
 
         function updateMenu() {
-            const token = getCookie('token'); // Obtenez le token des cookies
-            const user = JSON.parse(localStorage.getItem('user')); // Obtenez les informations de l'utilisateur depuis le localStorage
-
+            const user = JSON.parse(localStorage.getItem('user'));
             const menu = document.getElementById('user-actions');
             const userNameDisplay = document.getElementById('user-name');
             menu.innerHTML = ''; // Nettoyez le menu précédent
 
-            if (token) {
-                // Utilisateur connecté
-                userNameDisplay.textContent = `Bonjour ${user ? user.firstName : ''}`;
-                userNameDisplay.onclick = null; // Enlevez tout gestionnaire d'événement précédent
-
-                // Option Se déconnecter
+            if (user && user.token) {
+                console.log('User:', user);
+                userNameDisplay.textContent = `Bonjour ${user.firstName}`;
                 appendMenuItem(menu, 'Se déconnecter', function () {
-                    document.cookie = 'token=; Max-Age=0; path=/'; // Supprimez le token du cookie
-                    localStorage.removeItem('user'); // Supprimez les infos de l'utilisateur du localStorage
-                    window.location.reload(); // Rafraîchissez la page pour répercuter les changements
+                    localStorage.removeItem('user'); // Supprimez les infos de l'utilisateur
+                    localStorage.removeItem('cart'); // Supprimez le panier
+                    window.location.reload(); // Rafraîchissez la page
                 });
 
-                // Option Gérer les stocks (seulement si l'utilisateur est admin)
-                if (user && user.isAdmin) {
+                if (user.isAdmin) {
                     appendMenuItem(menu, 'Gérer les stocks', function () {
-                        window.location.href = 'stocks.html'; // Redirigez vers la page de gestion des stocks
+                        window.location.href = 'stocks.html';
                     });
                 }
             } else {
-                // Utilisateur non connecté
                 userNameDisplay.textContent = 'Connexion';
                 appendMenuItem(menu, 'Se connecter', function () {
                     window.location.href = 'login.html';
@@ -144,6 +137,7 @@
                 });
             }
         }
+
 
         function appendMenuItem(menu, text, onClick) {
             const item = document.createElement('div');
@@ -160,150 +154,6 @@
         }
 
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            $('.ui.dropdown').dropdown();
-            updateMenu();
-            loadProducts();
-        });
-
-        function loadProducts() {
-            // Données simulées pour les produits
-            const products = [
-                {
-                    "id": 1,
-                    "name": "Ricard Pastis de Marseille",
-                    "description": "Le classique apéritif anisé originaire de Marseille, souvent servi avec de l'eau pour un rafraîchissement estival.",
-                    "alcohol_degree": 45.0,
-                    "capacity": 750,
-                    "price_ht": 22.00,
-                    "stock": 150,
-                    "image": "img/ricard.jpg"
-                },
-                {
-                    "id": 2,
-                    "name": "Pastis 51",
-                    "description": "Un autre pastis emblématique de Marseille, connu pour son goût distinctif d'anis et une touche de réglisse.",
-                    "alcohol_degree": 45.0,
-                    "capacity": 750,
-                    "price_ht": 20.00,
-                    "stock": 100,
-                    "image": "img/pastis51.jpg"
-                },
-                {
-                    "id": 3,
-                    "name": "Henri Bardouin Pastis",
-                    "description": "Un pastis artisanal qui se distingue par un mélange complexe d'herbes et d'épices, le rendant riche en arômes.",
-                    "alcohol_degree": 42.0,
-                    "capacity": 750,
-                    "price_ht": 25.00,
-                    "stock": 80,
-                    "image": "img/henri-bardouin.png"
-                },
-                {
-                    "id": 4,
-                    "name": "Pastis Janot",
-                    "description": "Une variété de pastis de Provence qui offre un goût plus doux comparé aux versions plus commerciales.",
-                    "alcohol_degree": 40.0,
-                    "capacity": 750,
-                    "price_ht": 18.00,
-                    "stock": 120,
-                    "image": "img/pastis-janot.jpeg"
-                },
-                {
-                    "id": 5,
-                    "name": "Pastis Bleu",
-                    "description": "Reconnaissable à sa couleur bleue unique, ce pastis ajoute une touche visuelle à l'apéritif traditionnel.",
-                    "alcohol_degree": 40.0,
-                    "capacity": 750,
-                    "price_ht": 19.00,
-                    "stock": 90,
-                    "image": "img/pastis-bleu.jpg"
-                },
-                {
-                    "id": 6,
-                    "name": "Le Pastis d'Amélie",
-                    "description": "Fabriqué en petits lots, ce pastis artisanal est renommé pour ses notes florales et herbacées distinctes.",
-                    "alcohol_degree": 42.0,
-                    "capacity": 750,
-                    "price_ht": 23.00,
-                    "stock": 70,
-                    "image": "img/pastis-amelie.jpg"
-                },
-                {
-                    "id": 7,
-                    "name": "Pastis des Homs",
-                    "description": "Prisé pour son profil aromatique complexe, il est produit dans une petite distillerie avec des méthodes traditionnelles.",
-                    "alcohol_degree": 45.0,
-                    "capacity": 750,
-                    "price_ht": 24.00,
-                    "stock": 50,
-                    "image": "img/pastis-homs.jpg"
-                },
-                {
-                    "id": 8,
-                    "name": "Pernod Pastis",
-                    "description": "Un des premiers pastis à être commercialisé, Pernod est connu pour son profil de saveur équilibré et sa fidélité aux traditions.",
-                    "alcohol_degree": 40.0,
-                    "capacity": 750,
-                    "price_ht": 21.00,
-                    "stock": 110,
-                    "image": "img/pernod.jpg"
-                },
-                {
-                    "id": 9,
-                    "name": "Pastis Duval",
-                    "description": "Ce pastis est un peu moins anisé que les autres, offrant une expérience gustative légèrement différente, avec des touches de fenouil.",
-                    "alcohol_degree": 38.0,
-                    "capacity": 750,
-                    "price_ht": 17.00,
-                    "stock": 130,
-                    "image": "img/pastis-duval.jpg"
-                },
-                {
-                    "id": 10,
-                    "name": "Casanis Pastis",
-                    "description": "Un pastis traditionnel favorisé pour son mélange classique d'herbes et d'anis, offrant une profondeur de saveur.",
-                    "alcohol_degree": 45.0,
-                    "capacity": 750,
-                    "price_ht": 22.00,
-                    "stock": 60,
-                    "image": "img/casanis.jpg"
-                }
-            ];
-
-            const container = document.getElementById('products-container');
-            products.forEach(product => {
-                const column = document.createElement('div');
-                column.className = 'column';
-
-                const productElement = document.createElement('div');
-                productElement.className = 'ui card';
-                productElement.innerHTML = `
-                    <div class="image">
-                        <img src="${product.image}" alt="${product.name}">
-                    </div>
-                    <div class="content">
-                        <a class="header" href="product_details.html?id=${product.id}">${product.name}</a>
-                        <div class="meta">
-                            <span class="date">€${product.price_ht}</span>
-                        </div>
-                        <div class="description">
-                            ${product.description}
-                        </div>
-                    </div>
-                    <div class="extra content">
-                        <div class="ui button">Ajouter au panier</div>
-                    </div>
-                `;
-                column.appendChild(productElement);
-                container.appendChild(column);
-            });
-        }
-    </script>
-
-
-
 </body>
 
 </html>
