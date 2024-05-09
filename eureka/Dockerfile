@@ -1,11 +1,17 @@
 # Étape de build
 FROM maven:3.8.4-openjdk-17-slim AS build
-WORKDIR /app
+
+# Copie du pom.xml et des sources
 COPY pom.xml .
 COPY src ./src
+
+# Compilation du projet et skip des tests
 RUN mvn clean package -DskipTests
 
-# Étape d'exécution
+# Étape finale pour l'exécution
 FROM openjdk:17-slim
-COPY --from=build /app/target/eureka-1.0-SNAPSHOT.jar /app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+# Copie du jar construit à l'étape de build
+COPY --from=build /target/*.jar app.jar
+
+ENTRYPOINT ["java","-jar","app.jar"]
