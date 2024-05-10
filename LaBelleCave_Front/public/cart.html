@@ -11,19 +11,15 @@
             width: 200px;
             height: auto;
         }
-
         .ui.menu {
             margin-bottom: 2em;
         }
-
         .total-price {
             font-size: 1.5em;
             font-weight: bold;
             margin-top: 20px;
         }
-
-        .ui.table th,
-        .ui.table td {
+        .ui.table th, .ui.table td {
             text-align: center;
         }
     </style>
@@ -50,9 +46,7 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="cartItems">
-                <!-- Les articles du panier seront ajoutés ici dynamiquement -->
-            </tbody>
+            <tbody id="cartItems"></tbody>
             <tfoot>
                 <tr>
                     <th colspan="3">Total</th>
@@ -71,74 +65,61 @@
 
         function loadCartItems() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (!cart.length) {
-                document.getElementById('cartItems').innerHTML = '<tr><td colspan="5">Votre panier est vide</td></tr>';
-                return;
-            }
             fetch('http://localhost:8081/products')
                 .then(response => response.json())
                 .then(products => {
+                    if (!cart.length) {
+                        document.getElementById('cartItems').innerHTML = '<tr><td colspan="5">Votre panier est vide</td></tr>';
+                        return;
+                    }
                     let totalPrice = 0;
                     const container = document.getElementById('cartItems');
-                    container.innerHTML = ''; // Clear existing items
+                    container.innerHTML = '';
 
                     cart.forEach(item => {
-                        let product = products.find(p => p.id.toString() === item.productId.toString());
-                        if (!product) return; // Si le produit n'existe pas, ignorez-le
+                        const product = products.find(p => p.id == item.productId);
+                        if (!product) return;
 
                         let subtotal = product.priceHt * item.quantity;
                         totalPrice += subtotal;
-
                         container.innerHTML += `
-                <tr>
-                    <td>${product.name}</td>
-                    <td>$${product.priceHt.toFixed(2)}</td>
-                    <td>
-                        <div class="ui input">
-                            <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity('${item.productId}', this.value)">
-                        </div>
-                    </td>
-                    <td id="subtotal-${item.productId}">$${subtotal.toFixed(2)}</td>
-                    <td>
-                        <button class="ui button red" onclick="removeItem('${item.productId}')">Supprimer</button>
-                    </td>
-                </tr>
-            `;
+                            <tr>
+                                <td>${product.name}</td>
+                                <td>$${product.priceHt.toFixed(2)}</td>
+                                <td>
+                                    <div class="ui input">
+                                        <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity(${product.id}, this.value)">
+                                    </div>
+                                </td>
+                                <td>$${subtotal.toFixed(2)}</td>
+                                <td>
+                                    <button class="ui button red" onclick="removeItem(${product.id})">Supprimer</button>
+                                </td>
+                            </tr>
+                        `;
                     });
 
                     document.getElementById('totalPrice').textContent = `$${totalPrice.toFixed(2)}`;
                 });
         }
 
-
-        function updateQuantity(index, newQuantity) {
-            newQuantity = parseInt(newQuantity);
+        function updateQuantity(productId, quantity) {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (newQuantity > 0) {
-                cart[index].quantity = newQuantity;
+            let item = cart.find(i => i.productId == productId);
+            if (item && quantity > 0) {
+                item.quantity = parseInt(quantity);
                 localStorage.setItem('cart', JSON.stringify(cart));
-                loadCartItems(); // Refresh the cart display
+                loadCartItems();
             } else {
-                alert('La quantité doit être supérieure à 0.');
+                alert('Quantité invalide');
             }
         }
 
-        function removeItem(index) {
+        function removeItem(productId) {
             let cart = JSON.parse(localStorage.getItem('cart'));
-            cart.splice(index, 1); // Remove the item from the array
-            localStorage.setItem('cart', JSON.stringify(cart)); // Update the local storage
-            loadCartItems(); // Refresh the cart display
-        }
-
-        function recalculateCart() {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            let totalPrice = 0;
-            cart.forEach((item, index) => {
-                let subtotal = item.price * item.quantity;
-                document.getElementById(`subtotal-${index}`).textContent = `$${subtotal.toFixed(2)}`;
-                totalPrice += subtotal;
-            });
-            document.getElementById('totalPrice').textContent = `$${totalPrice.toFixed(2)}`;
+            cart = cart.filter(item => item.productId != productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCartItems();
         }
 
         function checkout() {
@@ -148,17 +129,22 @@
                 return;
             }
 
-            const cartItems = JSON.parse(localStorage.getItem('cart'));
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            if (!cart.length) {
+                alert('Votre panier est vide.');
+                return;
+            }
+
             const order = {
                 clientId: user.userId,
-                items: cartItems.map(item => ({
+                items: cart.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity
                 })),
-                totalHt: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+                totalHt: cart.reduce((sum, item) => sum + (item.quantity * item.price), 0)
             };
 
-            fetch('http://localhost:8083/orders', {
+            fetch('http://localhost:8082/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -166,21 +152,20 @@
                 },
                 body: JSON.stringify(order)
             })
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to submit order');
-                    return response.json();
-                })
-                .then(orderResponse => {
-                    alert('Commande passée avec succès!');
-                    localStorage.removeItem('cart'); // Nettoyer le panier après la commande
-                    window.location.href = '/'; // Rediriger vers la page d'accueil
-                })
-                .catch(error => {
-                    console.error('Error placing order:', error);
-                    alert('Erreur lors de la commande: ' + error.message);
-                });
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to submit order');
+                return response.json();
+            })
+            .then(() => {
+                alert('Commande passée avec succès!');
+                localStorage.removeItem('cart');
+                window.location.href = '/';
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                alert('Erreur lors de la commande: ' + error.message);
+            });
         }
-
     </script>
 </body>
 

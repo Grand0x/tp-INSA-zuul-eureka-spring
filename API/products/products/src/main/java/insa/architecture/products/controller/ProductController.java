@@ -5,13 +5,16 @@ import insa.architecture.products.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.lang.reflect.Field;
+import org.springframework.util.ReflectionUtils;
 
-@CrossOrigin(origins = "http://localhost:8050", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}, allowedHeaders = "*", allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:8050", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+        RequestMethod.DELETE }, allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -35,6 +38,17 @@ public class ProductController {
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productRepository.save(product);
         return ResponseEntity.created(URI.create("/products/" + savedProduct.getId())).body(savedProduct);
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<Product> updateProductStock(@PathVariable Long id, @RequestParam int stock) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    product.setStock(stock); // mise à jour uniquement du stock
+                    productRepository.save(product);
+                    return ResponseEntity.ok(product);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")

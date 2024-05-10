@@ -1,6 +1,7 @@
 package insa.architecture.orders.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "order_items")
@@ -11,6 +12,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
     private Order order;
 
     @Column(name = "product_id")
@@ -18,7 +20,8 @@ public class OrderItem {
 
     private Integer quantity;
 
-    // Getters and Setters
+    // Getters et Setters
+    // N'ignorez pas le setter, juste le getter pour éviter la boucle lors de la sérialisation
     public Long getId() {
         return id;
     }

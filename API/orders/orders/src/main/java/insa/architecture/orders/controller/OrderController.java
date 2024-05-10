@@ -5,11 +5,13 @@ import insa.architecture.orders.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:8050", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}, allowedHeaders = "*", allowCredentials = "true")
+
+@CrossOrigin(origins = "http://localhost:8050", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+        RequestMethod.DELETE }, allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -32,8 +34,20 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        Order savedOrder = orderRepository.save(order);
-        return ResponseEntity.created(URI.create("/orders/" + savedOrder.getId())).body(savedOrder);
+        try {
+            // Si les items viennent avec l'order, il faut les relier explicitement à
+            // l'order avant la sauvegarde
+            if (order.getItems() != null) {
+                order.getItems().forEach(item -> item.setOrder(order)); // Assurez-vous que chaque item a une référence
+                                                                        // à l'order
+            }
+            System.out.println("Received order: " + order);
+            Order savedOrder = orderRepository.save(order); // Sauvegarde de l'order avec ses items
+            return ResponseEntity.created(URI.create("/orders/" + savedOrder.getId())).body(savedOrder);
+        } catch (Exception e) {
+            System.out.println("Error creating order: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}")
@@ -53,5 +67,11 @@ public class OrderController {
                     orderRepository.delete(order);
                     return ResponseEntity.noContent().build();
                 }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllOrders() {
+        orderRepository.deleteAll();
+        return ResponseEntity.noContent().build();
     }
 }
