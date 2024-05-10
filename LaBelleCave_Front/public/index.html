@@ -66,40 +66,58 @@
         document.addEventListener('DOMContentLoaded', function () {
             $('.ui.dropdown').dropdown();
             updateMenu();
+            fetchProducts();
         });
 
-        fetch('http://localhost:8081/products')
-            .then(response => response.json())
-            .then(products => {
-                const container = document.getElementById('products-container');
-                products.forEach(product => {
-                    const column = document.createElement('div');
-                    column.className = 'column';
+        function fetchProducts() {
+            fetch('http://localhost:8081/products')
+                .then(response => response.json())
+                .then(products => {
+                    const container = document.getElementById('products-container');
+                    products.forEach(product => {
+                        const column = document.createElement('div');
+                        column.className = 'column';
 
-                    const productElement = document.createElement('div');
-                    productElement.className = 'ui card';
-                    productElement.innerHTML = `
-                        <div class="image">
-                            <img src="${product.image || 'placeholder.png'}" alt="${product.name}">
-                        </div>
-                        <div class="content">
-                            <a class="header" href="product_details.html?id=${product.id}">${product.name}</a>
-                            <div class="meta">
-                                <span class="date">€${product.priceHt}</span>
+                        const productElement = document.createElement('div');
+                        productElement.className = 'ui card';
+                        productElement.innerHTML = `
+                            <div class="image">
+                                <img src="${product.image || 'placeholder.png'}" alt="${product.name}">
                             </div>
-                            <div class="description">
-                                ${product.description}
+                            <div class="content">
+                                <a class="header" href="product_details.html?id=${product.id}">${product.name}</a>
+                                <div class="meta">
+                                    <span class="date">€${product.priceHt}</span>
+                                </div>
+                                <div class="description">
+                                    ${product.description}
+                                </div>
                             </div>
-                        </div>
-                        <div class="extra content">
-                            <div class="ui button">Ajouter au panier</div>
-                        </div>
-                    `;
-                    column.appendChild(productElement);
-                    container.appendChild(column);
+                            <div class="extra content">
+                                <button class="ui button" onclick="addToCartFromHome('${product.id}')">Ajouter au panier</button>
+                            </div>
+                        `;
+                        column.appendChild(productElement);
+                        container.appendChild(column);
+                    });
+                })
+                .catch(error => console.error('Error fetching products:', error));
+        }
+
+        function addToCartFromHome(productId) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let productInCart = cart.find(item => item.productId === productId);
+            if (productInCart) {
+                productInCart.quantity += 1; // Increment the quantity
+            } else {
+                cart.push({
+                    productId: productId,
+                    quantity: 1
                 });
-            })
-            .catch(error => console.error('Error fetching products:', error));
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert('Produit ajouté au panier');
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
